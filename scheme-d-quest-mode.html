@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1.0">
+<title>方案D：业主闯关任务（发散）</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'PingFang SC', sans-serif;
+    background: #f5f6f8;
+    width: 375px; margin: 0 auto;
+    color: #1a1a1a;
+  }
+
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 20px 8px; background: #fff;
+    font-size: 13px; font-weight: 600;
+  }
+  .status-bar .icons { display: flex; gap: 6px; font-size: 12px; }
+
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px 12px; background: #fff;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .nav-title { font-size: 17px; font-weight: 600; }
+  .nav-icon { font-size: 18px; color: #666; }
+  .nav-left { display: flex; gap: 16px; }
+
+  .date-selector {
+    background: #fff; padding: 12px 16px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 14px; color: #333; font-weight: 500;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  /* Hero */
+  .quest-hero {
+    background: linear-gradient(150deg, #722ed1 0%, #531dab 50%, #1677ff 100%);
+    padding: 20px 16px 24px;
+    position: relative; overflow: hidden;
+  }
+  .quest-hero::before {
+    content: '';
+    position: absolute; right: -20px; top: -40px;
+    width: 160px; height: 160px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1), transparent 70%);
+  }
+  .quest-hero::after {
+    content: '';
+    position: absolute; left: -30px; bottom: -30px;
+    width: 120px; height: 120px; border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+
+  .hero-prop-row {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .hero-prop-name { font-size: 17px; font-weight: 700; color: #fff; }
+  .hero-prop-sub { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 3px; }
+  .hero-price { font-size: 22px; font-weight: 800; color: #fff; }
+
+  /* Progress Card */
+  .progress-card {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 14px; padding: 14px 16px;
+    backdrop-filter: blur(10px);
+  }
+  .progress-top {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+  }
+  .progress-label { font-size: 13px; color: rgba(255,255,255,0.9); font-weight: 600; }
+  .progress-level {
+    font-size: 12px; font-weight: 700;
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .progress-track {
+    height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px;
+    margin-bottom: 10px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; width: 60%;
+    background: linear-gradient(90deg, #ffd700, #ff8c00);
+    border-radius: 4px;
+  }
+  .progress-steps {
+    display: flex; gap: 0;
+  }
+  .progress-step {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    font-size: 9px;
+  }
+  .step-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px;
+  }
+  .step-dot.done { background: #ffd700; border-color: #ffd700; color: #874d00; }
+  .step-dot.current { background: #fff; border-color: #fff; box-shadow: 0 0 6px rgba(255,255,255,0.8); }
+  .step-name { color: rgba(255,255,255,0.6); text-align: center; }
+  .step-name.done { color: rgba(255,255,255,0.9); }
+  .step-name.current { color: #ffd700; }
+
+  /* Quest Board */
+  .quest-board {
+    background: #fff; padding: 16px; margin: 0 0 8px;
+  }
+  .board-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px;
+  }
+  .board-header h3 { font-size: 15px; font-weight: 700; }
+  .board-week { font-size: 11px; color: #999; }
+
+  /* Quest Stage */
+  .quest-stage {
+    margin-bottom: 16px;
+  }
+  .stage-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 10px;
+  }
+  .stage-badge {
+    font-size: 11px; font-weight: 700; padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .stage-1 { background: #e8f4ff; color: #1677ff; }
+  .stage-2 { background: #fff7e6; color: #fa8c16; }
+  .stage-3 { background: linear-gradient(90deg, #f9f0ff, #fff1f0); color: #722ed1; border: 1px solid #d3adf7; }
+  .stage-title { font-size: 13px; font-weight: 600; }
+  .stage-reward {
+    margin-left: auto; font-size: 11px; color: #999;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .stage-complete { color: #52c41a; font-weight: 500; }
+
+  /* Quest Item */
+  .quest-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px; border-radius: 10px;
+    border: 1.5px solid #f0f0f0; margin-bottom: 6px;
+    background: #fafafa;
+    transition: all 0.2s;
+  }
+  .quest-item.done-item { background: #f6ffed; border-color: #d9f7be; }
+  .quest-item.locked { opacity: 0.45; }
+  .quest-item.active { background: #fff7e6; border-color: #ffe7ba; }
+
+  .quest-check {
+    width: 22px; height: 22px; border-radius: 50%;
+    flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center; font-size: 12px;
+  }
+  .check-done { background: #52c41a; color: #fff; }
+  .check-todo { border: 2px solid #d9d9d9; background: #fff; }
+  .check-locked { background: #f0f0f0; color: #bbb; font-size: 10px; }
+  .check-active { border: 2px solid #fa8c16; background: #fff; }
+
+  .quest-content { flex: 1; }
+  .quest-name { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+  .quest-desc { font-size: 11px; color: #888; line-height: 1.5; }
+  .quest-name.done-name { color: #52c41a; }
+  .quest-name.locked-name { color: #bbb; }
+
+  .quest-reward-tag {
+    font-size: 11px; padding: 3px 8px; border-radius: 8px;
+    white-space: nowrap; margin-top: 4px; display: inline-block;
+  }
+  .reward-blue { background: #e8f4ff; color: #1677ff; }
+  .reward-orange { background: #fff7e6; color: #fa8c16; }
+  .reward-purple { background: #f9f0ff; color: #722ed1; }
+
+  .quest-action-btn {
+    padding: 4px 12px; font-size: 12px; font-weight: 500;
+    border-radius: 8px; border: none; cursor: pointer;
+    white-space: nowrap; flex-shrink: 0; margin-top: 2px;
+    height: 28px;
+  }
+  .btn-go { background: #1677ff; color: #fff; }
+  .btn-active-go { background: #fa8c16; color: #fff; }
+
+  /* Reward Preview */
+  .reward-preview {
+    background: linear-gradient(135deg, #f9f0ff, #ede8ff);
+    border: 1.5px solid #d3adf7; border-radius: 12px;
+    padding: 14px 16px; margin-top: 4px;
+  }
+  .rp-title { font-size: 13px; font-weight: 700; color: #531dab; margin-bottom: 10px; }
+  .rp-list { display: flex; flex-direction: column; gap: 7px; }
+  .rp-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: #555;
+  }
+  .rp-item .rp-icon { font-size: 16px; }
+  .rp-item .rp-text { flex: 1; }
+  .rp-item .rp-locked { color: #bbb; font-size: 11px; }
+
+  /* Achievement Wall */
+  .achievement-section {
+    background: #fff; padding: 16px; margin: 0 0 8px;
+  }
+  .ach-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+  .ach-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    margin-bottom: 12px;
+  }
+  .ach-item {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+  }
+  .ach-icon-wrap {
+    width: 50px; height: 50px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; border: 2px solid transparent;
+  }
+  .ach-earned { background: linear-gradient(135deg, #fff7e6, #ffd666); border-color: #ffa940; }
+  .ach-locked { background: #f5f5f5; filter: grayscale(1); border-color: #f0f0f0; opacity: 0.5; }
+  .ach-label { font-size: 9px; color: #888; text-align: center; line-height: 1.3; }
+  .ach-label.earned { color: #d48806; font-weight: 600; }
+
+  .ach-tip {
+    background: #fffbe6; border: 1px solid #ffe58f; border-radius: 8px;
+    padding: 10px 12px; font-size: 11px; color: #666; line-height: 1.6;
+  }
+  .ach-tip strong { color: #d48806; }
+
+  /* Stats */
+  .stats-section { background: #fff; padding: 16px; margin: 0 0 8px; }
+  .section-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .week-tag { font-size: 11px; color: #999; font-weight: 400; background: #f5f5f5; padding: 2px 8px; border-radius: 20px; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card { background: #f8f9ff; border-radius: 10px; padding: 12px 14px; border: 1px solid #eef0ff; }
+  .stat-label { font-size: 11px; color: #888; margin-bottom: 6px; }
+  .stat-num-row { display: flex; align-items: baseline; gap: 4px; }
+  .stat-num { font-size: 24px; font-weight: 700; }
+  .stat-trend { font-size: 12px; font-weight: 600; padding: 1px 4px; border-radius: 4px; }
+  .trend-up { color: #f5222d; background: #fff1f0; }
+  .trend-down { color: #52c41a; background: #f6ffed; }
+
+  /* Transaction */
+  .trans-section { background: #fff; padding: 16px; margin: 0 0 8px; }
+  .trans-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #fafafa; border-radius: 8px; border: 1px solid #f0f0f0; margin-bottom: 8px; }
+  .trans-dot { width: 8px; height: 8px; background: #d9d9d9; border-radius: 50%; flex-shrink: 0; }
+  .trans-info { flex: 1; }
+  .trans-type { font-size: 12px; color: #666; }
+  .trans-meta { font-size: 11px; color: #aaa; margin-top: 2px; }
+  .trans-price { font-size: 15px; font-weight: 700; color: #f5222d; }
+
+  .bottom-cta { padding: 12px 16px 32px; background: #fff; border-top: 1px solid #f0f0f0; position: sticky; bottom: 0; }
+  .send-btn { width: 100%; height: 48px; background: linear-gradient(135deg, #1677ff, #0958d9); border: none; border-radius: 24px; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
+
+  .scheme-label { background: linear-gradient(90deg, #722ed1, #1677ff); color: #fff; font-size: 12px; padding: 6px 16px; text-align: center; font-weight: 500; letter-spacing: 1px; }
+  .scheme-desc { background: #f9f0ff; border-bottom: 1px solid #e8d6ff; padding: 8px 16px; font-size: 11px; color: #722ed1; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="scheme-label">方案 D · 业主闯关任务（发散方案）</div>
+<div class="scheme-desc">思路：游戏化任务链，完成每一关解锁新特权，给业主持续的成就感</div>
+
+<div class="status-bar">
+  <span>9:41</span>
+  <div class="icons"><span>▲▲▲▲</span><span>WiFi</span><span>🔋</span></div>
+</div>
+
+<div class="nav">
+  <div class="nav-left">
+    <span class="nav-icon">←</span>
+    <span class="nav-icon">✕</span>
+  </div>
+  <span class="nav-title">销售周报</span>
+  <span class="nav-icon">⋯</span>
+</div>
+
+<div class="date-selector">
+  <span>2026.03.21 ~ 03.27</span>
+  <span style="color:#999;font-size:12px;">▾</span>
+</div>
+
+<!-- Quest Hero -->
+<div class="quest-hero">
+  <div class="hero-prop-row">
+    <div>
+      <div class="hero-prop-name">上地东里 2室1厅</div>
+      <div class="hero-prop-sub">已展示 28 天 · 查看 C 端 →</div>
+    </div>
+    <div class="hero-price">680万</div>
+  </div>
+
+  <div class="progress-card">
+    <div class="progress-top">
+      <div class="progress-label">🏅 本周任务进度</div>
+      <div class="progress-level">⭐ 活跃卖家 Lv.3</div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill"></div>
+    </div>
+    <div class="progress-steps">
+      <div class="progress-step">
+        <div class="step-dot done">✓</div>
+        <div class="step-name done">入门任务</div>
+      </div>
+      <div class="progress-step">
+        <div class="step-dot done">✓</div>
+        <div class="step-name done">进阶任务</div>
+      </div>
+      <div class="progress-step">
+        <div class="step-dot current"></div>
+        <div class="step-name current">高手挑战</div>
+      </div>
+      <div class="progress-step">
+        <div class="step-dot" style="border-color:rgba(255,255,255,0.3);"></div>
+        <div class="step-name">王者特权</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quest Board -->
+<div class="quest-board">
+  <div class="board-header">
+    <h3>📋 本周任务板</h3>
+    <div class="board-week">03.21 ~ 03.27</div>
+  </div>
+
+  <!-- Stage 1: Done -->
+  <div class="quest-stage">
+    <div class="stage-header">
+      <span class="stage-badge stage-1">第一关 · 入门任务</span>
+      <span class="stage-reward stage-complete">✓ 已全部完成</span>
+    </div>
+
+    <div class="quest-item done-item">
+      <div class="quest-check check-done">✓</div>
+      <div class="quest-content">
+        <div class="quest-name done-name">确认房源真实在售</div>
+        <div class="quest-desc">3月21日已完成 · 获得「真实在售」标签</div>
+      </div>
+    </div>
+
+    <div class="quest-item done-item">
+      <div class="quest-check check-done">✓</div>
+      <div class="quest-content">
+        <div class="quest-name done-name">查看本周数据报告</div>
+        <div class="quest-desc">3月22日已完成 · 已解锁进阶任务</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stage 2: In Progress -->
+  <div class="quest-stage">
+    <div class="stage-header">
+      <span class="stage-badge stage-2">第二关 · 进阶任务</span>
+      <span class="stage-reward">2/3 已完成</span>
+    </div>
+
+    <div class="quest-item done-item">
+      <div class="quest-check check-done">✓</div>
+      <div class="quest-content">
+        <div class="quest-name done-name">回复 2 条以上咨询</div>
+        <div class="quest-desc">本周已回复 4 条 · 获得「高响应」标签</div>
+      </div>
+    </div>
+
+    <div class="quest-item done-item">
+      <div class="quest-check check-done">✓</div>
+      <div class="quest-content">
+        <div class="quest-name done-name">设置本周可看房时段</div>
+        <div class="quest-desc">已设置 周六全天、周日上午</div>
+      </div>
+    </div>
+
+    <div class="quest-item active">
+      <div class="quest-check check-active">
+        <span style="font-size:9px;">进行中</span>
+      </div>
+      <div class="quest-content">
+        <div class="quest-name">更新至少 3 张房源照片</div>
+        <div class="quest-desc">完成后解锁「高手挑战」，解锁擦亮加速功能</div>
+        <span class="quest-reward-tag reward-orange">解锁：照片优先展示位</span>
+      </div>
+      <button class="quest-action-btn btn-active-go">去更新</button>
+    </div>
+  </div>
+
+  <!-- Stage 3: Locked -->
+  <div class="quest-stage">
+    <div class="stage-header">
+      <span class="stage-badge stage-3">第三关 · 高手挑战</span>
+      <span class="stage-reward" style="color:#722ed1;">完成全部解锁特权</span>
+    </div>
+
+    <div class="quest-item locked">
+      <div class="quest-check check-locked">🔒</div>
+      <div class="quest-content">
+        <div class="quest-name locked-name">完成一次「超级擦亮」</div>
+        <div class="quest-desc">房源置顶 72小时 + 推荐频道展示</div>
+      </div>
+    </div>
+
+    <div class="quest-item locked">
+      <div class="quest-check check-locked">🔒</div>
+      <div class="quest-content">
+        <div class="quest-name locked-name">邀请经纪人发布带看视频</div>
+        <div class="quest-desc">视频带看可吸引外地客户，提升成交概率</div>
+      </div>
+    </div>
+
+    <!-- Final Reward Preview -->
+    <div class="reward-preview">
+      <div class="rp-title">🏆 完成全部挑战，解锁本周王者特权</div>
+      <div class="rp-list">
+        <div class="rp-item">
+          <span class="rp-icon">👑</span>
+          <span class="rp-text">「本周热门」专属标签（C端展示）</span>
+        </div>
+        <div class="rp-item">
+          <span class="rp-icon">📌</span>
+          <span class="rp-text">搜索结果页置顶 3 天</span>
+        </div>
+        <div class="rp-item">
+          <span class="rp-icon">💎</span>
+          <span class="rp-text">专属经纪人 1v1 加速服务</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Achievement Wall -->
+<div class="achievement-section">
+  <div class="ach-title">🎖 我的成就</div>
+  <div class="ach-grid">
+    <div class="ach-item">
+      <div class="ach-icon-wrap ach-earned">⚡</div>
+      <div class="ach-label earned">闪电响应</div>
+    </div>
+    <div class="ach-item">
+      <div class="ach-icon-wrap ach-earned">🗓</div>
+      <div class="ach-label earned">连续 3 周</div>
+    </div>
+    <div class="ach-item">
+      <div class="ach-icon-wrap ach-earned">📸</div>
+      <div class="ach-label earned">照片达人</div>
+    </div>
+    <div class="ach-item">
+      <div class="ach-icon-wrap ach-locked">👑</div>
+      <div class="ach-label">本周王者<br>未解锁</div>
+    </div>
+    <div class="ach-item">
+      <div class="ach-icon-wrap ach-locked">🔥</div>
+      <div class="ach-label">热门房源<br>未解锁</div>
+    </div>
+    <div class="ach-item">
+      <div class="ach-icon-wrap ach-locked">💯</div>
+      <div class="ach-label">满分好房<br>未解锁</div>
+    </div>
+    <div class="ach-item">
+      <div class="ach-icon-wrap ach-locked">🚀</div>
+      <div class="ach-label">超级爆发<br>未解锁</div>
+    </div>
+    <div class="ach-item">
+      <div class="ach-icon-wrap ach-locked">🎯</div>
+      <div class="ach-label">精准定价<br>未解锁</div>
+    </div>
+  </div>
+  <div class="ach-tip">
+    💡 完成「更新照片」任务后，本周即可解锁「高手挑战」，
+    距离 <strong>王者特权</strong> 仅剩最后 2 关！
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-section">
+  <div class="section-title">本周数据 <span class="week-tag">03.21 ~ 03.27</span></div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">曝光量 · 小区排名 1</div>
+      <div class="stat-num-row">
+        <div class="stat-num">120</div>
+        <div class="stat-trend trend-up">↑</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">浏览量 · 小区排名 1</div>
+      <div class="stat-num-row">
+        <div class="stat-num">80</div>
+        <div class="stat-trend trend-down">↓</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">咨询量 · 小区排名 12</div>
+      <div class="stat-num-row">
+        <div class="stat-num">22</div>
+        <div class="stat-trend trend-up">↑</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">带看量 · 小区排名 3</div>
+      <div class="stat-num-row">
+        <div class="stat-num">12</div>
+        <div class="stat-trend trend-down">↓</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Transaction -->
+<div class="trans-section">
+  <div class="section-title" style="margin-bottom:12px;">
+    近3个月同小区成交 <span class="week-tag">共 12 套</span>
+  </div>
+  <div class="trans-item">
+    <div class="trans-dot"></div>
+    <div class="trans-info">
+      <div class="trans-type">2居室 82.25m² · 南北</div>
+      <div class="trans-meta">3天前成交 · 成交周期 38天</div>
+    </div>
+    <div class="trans-price">620万</div>
+  </div>
+  <div class="trans-item">
+    <div class="trans-dot"></div>
+    <div class="trans-info">
+      <div class="trans-type">2居室 82.25m² · 南北</div>
+      <div class="trans-meta">16天前成交 · 成交周期 38天</div>
+    </div>
+    <div class="trans-price">618.5万</div>
+  </div>
+</div>
+
+<div class="bottom-cta">
+  <button class="send-btn">发给业主</button>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>销售周报 · 互动改版方案集</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'PingFang SC', sans-serif;
+    background: #f0f2f5; min-height: 100vh; padding: 40px 24px;
+  }
+  h1 { font-size: 24px; font-weight: 800; color: #1a1a1a; margin-bottom: 6px; }
+  .subtitle { font-size: 14px; color: #666; margin-bottom: 8px; }
+  .problem-box {
+    background: #fff3cd; border: 1px solid #ffc107; border-radius: 10px;
+    padding: 12px 16px; margin-bottom: 32px; font-size: 13px; color: #555; line-height: 1.7;
+  }
+  .problem-box strong { color: #c0392b; }
+  .problem-box .goal { color: #1677ff; font-weight: 600; }
+
+  .schemes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .scheme-card {
+    background: #fff; border-radius: 16px;
+    overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    text-decoration: none; color: inherit;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: block;
+  }
+  .scheme-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  .card-header {
+    padding: 20px 20px 16px;
+    color: #fff;
+  }
+  .card-a { background: linear-gradient(135deg, #ff7a00, #1677ff); }
+  .card-b { background: linear-gradient(135deg, #0f1f5c, #1677ff); }
+  .card-c { background: linear-gradient(135deg, #13c2a8, #096dd9); }
+  .card-d { background: linear-gradient(135deg, #722ed1, #1677ff); }
+
+  .card-tag {
+    font-size: 11px; background: rgba(255,255,255,0.2);
+    padding: 3px 10px; border-radius: 20px;
+    display: inline-block; margin-bottom: 8px;
+  }
+  .card-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .card-concept { font-size: 12px; opacity: 0.85; line-height: 1.5; }
+
+  .card-body { padding: 16px 20px 20px; }
+  .card-desc { font-size: 13px; color: #555; line-height: 1.7; margin-bottom: 14px; }
+
+  .feature-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .feature-list li {
+    font-size: 12px; color: #555;
+    display: flex; align-items: flex-start; gap: 6px;
+  }
+  .feature-list li::before {
+    content: '→'; color: #1677ff; font-weight: 700;
+    flex-shrink: 0; margin-top: 1px;
+  }
+
+  .card-footer {
+    padding: 12px 20px 14px;
+    border-top: 1px solid #f0f0f0;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .view-btn {
+    font-size: 13px; font-weight: 600; color: #1677ff;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .scheme-type {
+    font-size: 11px; color: #999;
+    background: #f5f5f5; padding: 3px 10px; border-radius: 20px;
+  }
+
+  .section-label {
+    font-size: 13px; font-weight: 700; color: #999;
+    margin: 24px 0 12px; letter-spacing: 1px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-label::after {
+    content: ''; flex: 1; height: 1px; background: #e0e0e0;
+  }
+</style>
+</head>
+<body>
+
+<h1>销售周报 · 互动改版方案集</h1>
+<p class="subtitle">4 种方案探索：让业主从"被动阅读"变为"主动参与"</p>
+
+<div class="problem-box">
+  <strong>当前痛点：</strong>业主认为每周内容都差不多，看了不知道该做什么，没有参与感和获得感。<br>
+  <span class="goal">优化目标：</span>让业主通过互动操作提升房源曝光，获得真实可感知的服务价值。
+</div>
+
+<div class="section-label">方案一 · 二 · 擦亮核心玩法（参考闲鱼擦亮）</div>
+
+<div class="schemes-grid">
+  <a class="scheme-card" href="scheme-a-instant-polish.html" target="_blank">
+    <div class="card-header card-a">
+      <div class="card-tag">方案 A · 擦亮方向</div>
+      <div class="card-title">即时行动版</div>
+      <div class="card-concept">一键擦亮 · 立即置顶 · 清晰反馈</div>
+    </div>
+    <div class="card-body">
+      <div class="card-desc">
+        核心是"大按钮 + 即时反馈"。每周限定次数的擦亮，操作后立即看到置顶效果和预期收益数字，辅以简单的待办任务提升整体曝光。
+      </div>
+      <ul class="feature-list">
+        <li>醒目的「立即擦亮」CTA，每周 3 次限额制造稀缺感</li>
+        <li>点击前展示"预计新增 60~80 次浏览"量化期待值</li>
+        <li>历史擦亮效果溯源（上次带来 67 次浏览）</li>
+        <li>4 个小任务辅助，每个都有具体增益说明</li>
+      </ul>
+    </div>
+    <div class="card-footer">
+      <span class="view-btn">查看原型 →</span>
+      <span class="scheme-type">简洁 · 直接</span>
+    </div>
+  </a>
+
+  <a class="scheme-card" href="scheme-b-energy-polish.html" target="_blank">
+    <div class="card-header card-b">
+      <div class="card-tag">方案 B · 擦亮方向</div>
+      <div class="card-title">能量积累版</div>
+      <div class="card-concept">积累能量 · 解锁等级 · 爆发增益</div>
+    </div>
+    <div class="card-body">
+      <div class="card-desc">
+        引入"擦亮能量"体系，完成任务积累能量，解锁更高级别的擦亮（普通→增强→超级爆发）。让每次互动都有积累感，最终能量爆发带来大收益。
+      </div>
+      <ul class="feature-list">
+        <li>能量进度条横跨 3 个里程碑（30/60/100）</li>
+        <li>3 倍效果的「超级爆发」作为终极目标牵引</li>
+        <li>每个任务标注可获能量值，行为动机清晰</li>
+        <li>近 6 周擦亮历史柱状图，直观展示积累效果</li>
+      </ul>
+    </div>
+    <div class="card-footer">
+      <span class="view-btn">查看原型 →</span>
+      <span class="scheme-type">养成 · 激励</span>
+    </div>
+  </a>
+</div>
+
+<div class="section-label">方案三 · 四 · 发散探索方向</div>
+
+<div class="schemes-grid">
+  <a class="scheme-card" href="scheme-c-health-diagnosis.html" target="_blank">
+    <div class="card-header card-c">
+      <div class="card-tag">方案 C · 发散方向</div>
+      <div class="card-title">竞争力诊断版</div>
+      <div class="card-concept">体检评分 · 精准问题 · 优化预测</div>
+    </div>
+    <div class="card-body">
+      <div class="card-desc">
+        将房源信息转化为"健康体检报告"，用评分环、维度拆解和竞品对比，让业主清楚自己的房源在哪里弱、改善后能涨多少曝光，提供清晰的行动路径。
+      </div>
+      <ul class="feature-list">
+        <li>四维评分环（价格/照片/信息完整度/响应速度）</li>
+        <li>与同小区均值对比，有清晰的相对位置感</li>
+        <li>每个问题维度有"诊断卡片 + 具体操作按钮"</li>
+        <li>优化预测清单：每项操作预计增加 XX 次/周</li>
+        <li>竞品排名表，直观看到自己在第几位</li>
+      </ul>
+    </div>
+    <div class="card-footer">
+      <span class="view-btn">查看原型 →</span>
+      <span class="scheme-type">理性 · 数据驱动</span>
+    </div>
+  </a>
+
+  <a class="scheme-card" href="scheme-d-quest-mode.html" target="_blank">
+    <div class="card-header card-d">
+      <div class="card-tag">方案 D · 发散方向</div>
+      <div class="card-title">业主闯关任务版</div>
+      <div class="card-concept">阶段任务 · 逐关解锁 · 成就荣耀</div>
+    </div>
+    <div class="card-body">
+      <div class="card-desc">
+        借鉴游戏关卡设计，将本周行动组织成"入门 → 进阶 → 高手 → 王者"四关，每关完成后解锁新特权。成就墙让业主积累荣誉感，形成长期粘性。
+      </div>
+      <ul class="feature-list">
+        <li>四段式关卡（入门/进阶/高手/王者）渐进解锁</li>
+        <li>每关任务数量少且明确，避免认知负担</li>
+        <li>王者特权极具吸引力：热门标签+搜索置顶+1v1服务</li>
+        <li>成就勋章墙积累历史荣誉，形成周期性回访动力</li>
+        <li>已完成任务有对勾，进度可见，减少焦虑</li>
+      </ul>
+    </div>
+    <div class="card-footer">
+      <span class="view-btn">查看原型 →</span>
+      <span class="scheme-type">游戏化 · 长期粘性</span>
+    </div>
+  </a>
+</div>
+
+</body>
+</html>

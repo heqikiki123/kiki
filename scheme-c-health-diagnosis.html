@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1.0">
+<title>方案C：房源竞争力诊断版（发散）</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'PingFang SC', sans-serif;
+    background: #f5f6f8;
+    width: 375px; margin: 0 auto;
+    color: #1a1a1a;
+  }
+
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 20px 8px; background: #fff;
+    font-size: 13px; font-weight: 600;
+  }
+  .status-bar .icons { display: flex; gap: 6px; font-size: 12px; }
+
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px 12px; background: #fff;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .nav-title { font-size: 17px; font-weight: 600; }
+  .nav-icon { font-size: 18px; color: #666; }
+  .nav-left { display: flex; gap: 16px; }
+
+  .date-selector {
+    background: #fff; padding: 12px 16px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 14px; color: #333; font-weight: 500;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  /* Score Hero */
+  .score-hero {
+    background: linear-gradient(150deg, #13c2a8 0%, #0fa37a 40%, #096dd9 100%);
+    padding: 24px 16px 28px;
+    position: relative; overflow: hidden;
+  }
+  .score-hero::before {
+    content: '';
+    position: absolute; right: -40px; bottom: -40px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+  }
+
+  .score-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  .score-prop-name { font-size: 17px; font-weight: 700; color: #fff; }
+  .score-prop-sub { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 3px; }
+  .score-price { font-size: 22px; font-weight: 800; color: #fff; }
+  .score-price span { font-size: 12px; opacity: 0.8; }
+
+  /* Score Ring */
+  .score-ring-area {
+    display: flex; align-items: center; gap: 20px;
+  }
+  .ring-wrap {
+    position: relative; width: 100px; height: 100px; flex-shrink: 0;
+  }
+  .ring-svg {
+    transform: rotate(-90deg);
+  }
+  .ring-bg { fill: none; stroke: rgba(255,255,255,0.2); stroke-width: 8; }
+  .ring-fill {
+    fill: none; stroke: #fff; stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 251;
+    stroke-dashoffset: 75; /* 70% filled */
+    filter: drop-shadow(0 0 4px rgba(255,255,255,0.6));
+  }
+  .ring-center {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .ring-score { font-size: 26px; font-weight: 800; color: #fff; }
+  .ring-total { font-size: 11px; color: rgba(255,255,255,0.7); }
+
+  .score-breakdown {
+    flex: 1;
+  }
+  .score-breakdown-title {
+    font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 10px;
+  }
+  .breakdown-item {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 7px;
+  }
+  .breakdown-label { font-size: 11px; color: rgba(255,255,255,0.85); width: 60px; }
+  .breakdown-bar-track {
+    flex: 1; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px;
+  }
+  .breakdown-bar-fill {
+    height: 100%; border-radius: 3px; background: #fff;
+  }
+  .breakdown-score { font-size: 11px; color: rgba(255,255,255,0.9); font-weight: 600; width: 26px; text-align: right; }
+
+  .score-vs-tip {
+    margin-top: 14px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px; padding: 8px 12px;
+    font-size: 11px; color: rgba(255,255,255,0.9);
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* Diagnosis Cards */
+  .diag-section {
+    background: #fff; padding: 16px; margin: 0 0 8px;
+  }
+  .diag-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px;
+  }
+  .diag-header h3 { font-size: 15px; font-weight: 700; }
+  .diag-header .all-link { font-size: 12px; color: #1677ff; }
+
+  .diag-card {
+    border-radius: 12px; border: 1.5px solid #f0f0f0;
+    overflow: hidden; margin-bottom: 10px;
+  }
+  .diag-card:last-child { margin-bottom: 0; }
+
+  .diag-card-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px 10px;
+  }
+  .diag-icon { font-size: 20px; }
+  .diag-title { font-size: 13px; font-weight: 600; flex: 1; }
+  .diag-score-badge {
+    font-size: 12px; font-weight: 700; padding: 2px 10px;
+    border-radius: 20px;
+  }
+  .score-good { background: #f6ffed; color: #389e0d; }
+  .score-mid { background: #fffbe6; color: #d48806; }
+  .score-bad { background: #fff1f0; color: #cf1322; }
+
+  .diag-card-body {
+    padding: 0 14px 12px;
+    border-top: 1px solid #f5f5f5;
+  }
+  .diag-problem {
+    font-size: 11px; color: #666; padding: 8px 0 6px;
+    line-height: 1.6;
+  }
+  .diag-problem .problem-highlight { color: #f5222d; font-weight: 500; }
+  .diag-problem .good-highlight { color: #389e0d; font-weight: 500; }
+
+  .diag-action-btn {
+    width: 100%; height: 36px; border-radius: 8px;
+    border: none; cursor: pointer;
+    font-size: 12px; font-weight: 600; margin-top: 4px;
+  }
+  .action-primary { background: #e8f4ff; color: #1677ff; }
+  .action-done { background: #f6ffed; color: #52c41a; }
+
+  .diag-card.urgent { border-color: #ffccc7; }
+  .diag-card.urgent .diag-card-header { background: #fff1f0; }
+  .diag-card.good { border-color: #d9f7be; }
+  .diag-card.good .diag-card-header { background: #f6ffed; }
+
+  /* Optimization Forecast */
+  .forecast-section {
+    background: #fff; padding: 16px; margin: 0 0 8px;
+  }
+  .forecast-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+  .forecast-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid #f5f5f5;
+  }
+  .forecast-item:last-child { border-bottom: none; }
+  .forecast-action { flex: 1; font-size: 12px; color: #333; }
+  .forecast-gain {
+    font-size: 12px; color: #389e0d; font-weight: 600;
+    white-space: nowrap;
+  }
+  .forecast-checkbox {
+    width: 18px; height: 18px; border-radius: 4px;
+    border: 1.5px solid #d9d9d9;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .forecast-checkbox.checked {
+    background: #52c41a; border-color: #52c41a; color: #fff;
+    font-size: 11px;
+  }
+  .forecast-total {
+    margin-top: 12px;
+    background: linear-gradient(90deg, #e8f4ff, #f0ffe6);
+    border-radius: 10px; padding: 12px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .forecast-total-text { font-size: 12px; color: #555; }
+  .forecast-total-num { font-size: 18px; font-weight: 700; color: #389e0d; }
+
+  /* Competitor Analysis */
+  .competitor-section {
+    background: #fff; padding: 16px; margin: 0 0 8px;
+  }
+  .comp-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+  .comp-list { display: flex; flex-direction: column; gap: 8px; }
+  .comp-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 8px;
+    border: 1px solid #f0f0f0;
+  }
+  .comp-item.mine {
+    background: #e8f4ff; border-color: #bae0ff;
+  }
+  .comp-rank {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .rank-1 { background: #ffd700; color: #874d00; }
+  .rank-2 { background: #c0c0c0; color: #434343; }
+  .rank-3 { background: #cd7f32; color: #fff; }
+  .rank-me { background: #1677ff; color: #fff; }
+  .comp-info { flex: 1; }
+  .comp-room { font-size: 12px; color: #666; }
+  .comp-days { font-size: 11px; color: #aaa; margin-top: 2px; }
+  .comp-price { font-size: 14px; font-weight: 700; color: #1a1a1a; }
+  .comp-price.mine-price { color: #1677ff; }
+  .mine-tag { font-size: 10px; color: #1677ff; background: rgba(22,119,255,0.12); padding: 1px 6px; border-radius: 4px; margin-left: 4px; }
+
+  /* Stats */
+  .stats-section { background: #fff; padding: 16px; margin: 0 0 8px; }
+  .section-title {
+    font-size: 15px; font-weight: 700; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .week-tag { font-size: 11px; color: #999; font-weight: 400; background: #f5f5f5; padding: 2px 8px; border-radius: 20px; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card { background: #f8f9ff; border-radius: 10px; padding: 12px 14px; border: 1px solid #eef0ff; }
+  .stat-label { font-size: 11px; color: #888; margin-bottom: 6px; }
+  .stat-num-row { display: flex; align-items: baseline; gap: 4px; }
+  .stat-num { font-size: 24px; font-weight: 700; }
+  .stat-trend { font-size: 12px; font-weight: 600; padding: 1px 4px; border-radius: 4px; }
+  .trend-up { color: #f5222d; background: #fff1f0; }
+  .trend-down { color: #52c41a; background: #f6ffed; }
+
+  .bottom-cta { padding: 12px 16px 32px; background: #fff; border-top: 1px solid #f0f0f0; position: sticky; bottom: 0; }
+  .send-btn { width: 100%; height: 48px; background: linear-gradient(135deg, #1677ff, #0958d9); border: none; border-radius: 24px; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
+
+  .scheme-label { background: #13c2a8; color: #fff; font-size: 12px; padding: 6px 16px; text-align: center; font-weight: 500; letter-spacing: 1px; }
+  .scheme-desc { background: #e6fffb; border-bottom: 1px solid #b5f5ec; padding: 8px 16px; font-size: 11px; color: #13c2a8; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="scheme-label">方案 C · 房源竞争力诊断（发散方案）</div>
+<div class="scheme-desc">思路：像"体检报告"一样诊断房源问题，给出可操作的精准优化建议</div>
+
+<div class="status-bar">
+  <span>9:41</span>
+  <div class="icons"><span>▲▲▲▲</span><span>WiFi</span><span>🔋</span></div>
+</div>
+
+<div class="nav">
+  <div class="nav-left">
+    <span class="nav-icon">←</span>
+    <span class="nav-icon">✕</span>
+  </div>
+  <span class="nav-title">销售周报</span>
+  <span class="nav-icon">⋯</span>
+</div>
+
+<div class="date-selector">
+  <span>2026.03.21 ~ 03.27</span>
+  <span style="color:#999;font-size:12px;">▾</span>
+</div>
+
+<!-- Score Hero -->
+<div class="score-hero">
+  <div class="score-top">
+    <div>
+      <div class="score-prop-name">上地东里 2室1厅</div>
+      <div class="score-prop-sub">已展示 28 天 · 查看 C 端 →</div>
+    </div>
+    <div>
+      <div class="score-price">680<span>万</span></div>
+    </div>
+  </div>
+
+  <div class="score-ring-area">
+    <div class="ring-wrap">
+      <svg class="ring-svg" width="100" height="100" viewBox="0 0 100 100">
+        <circle class="ring-bg" cx="50" cy="50" r="40"/>
+        <circle class="ring-fill" cx="50" cy="50" r="40"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-score">70</div>
+        <div class="ring-total">/ 100</div>
+      </div>
+    </div>
+
+    <div class="score-breakdown">
+      <div class="score-breakdown-title">竞争力评分</div>
+      <div class="breakdown-item">
+        <div class="breakdown-label">价格竞争力</div>
+        <div class="breakdown-bar-track">
+          <div class="breakdown-bar-fill" style="width:55%;"></div>
+        </div>
+        <div class="breakdown-score">55</div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-label">照片质量</div>
+        <div class="breakdown-bar-track">
+          <div class="breakdown-bar-fill" style="width:60%;"></div>
+        </div>
+        <div class="breakdown-score">60</div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-label">信息完整度</div>
+        <div class="breakdown-bar-track">
+          <div class="breakdown-bar-fill" style="width:85%;"></div>
+        </div>
+        <div class="breakdown-score">85</div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-label">响应速度</div>
+        <div class="breakdown-bar-track">
+          <div class="breakdown-bar-fill" style="width:80%;"></div>
+        </div>
+        <div class="breakdown-score">80</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="score-vs-tip">
+    📊 同小区在售房源平均评分 <strong style="color:#fff;margin:0 4px;">62分</strong>，您的房源高于均值 ↑8分，本周可进一步优化
+  </div>
+</div>
+
+<!-- Diagnosis Cards -->
+<div class="diag-section">
+  <div class="diag-header">
+    <h3>🩺 本周诊断报告</h3>
+    <div class="all-link">查看历史 ></div>
+  </div>
+
+  <!-- Urgent Issue -->
+  <div class="diag-card urgent">
+    <div class="diag-card-header">
+      <span class="diag-icon">💰</span>
+      <span class="diag-title">价格竞争力</span>
+      <span class="diag-score-badge score-bad">55分 · 偏低</span>
+    </div>
+    <div class="diag-card-body">
+      <div class="diag-problem">
+        您的挂牌价 <span class="problem-highlight">680万</span> 高于近期同户型成交均价 620万 约 <span class="problem-highlight">+9.7%</span>。
+        挂牌价在均价 ±5% 内时，成交周期可缩短约 <strong>12.7天</strong>。
+      </div>
+      <button class="diag-action-btn action-primary">调整挂牌价格 →</button>
+    </div>
+  </div>
+
+  <!-- Warning Issue -->
+  <div class="diag-card" style="border-color:#ffe7ba;">
+    <div class="diag-card-header" style="background:#fff7e6;">
+      <span class="diag-icon">📷</span>
+      <span class="diag-title">照片质量</span>
+      <span class="diag-score-badge score-mid">60分 · 待改善</span>
+    </div>
+    <div class="diag-card-body">
+      <div class="diag-problem">
+        当前 6 张照片中仅 2 张为近期拍摄，<span class="problem-highlight">客厅、主卧照片模糊</span>，
+        同小区高评分房源平均照片数量为 12 张，建议更新。
+      </div>
+      <button class="diag-action-btn action-primary">预约专业拍摄 →</button>
+    </div>
+  </div>
+
+  <!-- Good Item -->
+  <div class="diag-card good">
+    <div class="diag-card-header">
+      <span class="diag-icon">⚡</span>
+      <span class="diag-title">响应速度</span>
+      <span class="diag-score-badge score-good">80分 · 良好</span>
+    </div>
+    <div class="diag-card-body">
+      <div class="diag-problem">
+        本周平均回复时间 <span class="good-highlight">2.3小时</span>，优于小区平均水平（5.1小时）。
+        快速响应是获取意向客户的关键。
+      </div>
+      <button class="diag-action-btn action-done">✓ 继续保持</button>
+    </div>
+  </div>
+</div>
+
+<!-- Optimization Forecast -->
+<div class="forecast-section">
+  <div class="forecast-title">🎯 优化路径预测</div>
+
+  <div class="forecast-item">
+    <div class="forecast-checkbox checked">✓</div>
+    <div class="forecast-action">确认价格在售（已完成）</div>
+    <div class="forecast-gain">+12次/周</div>
+  </div>
+  <div class="forecast-item">
+    <div class="forecast-checkbox"></div>
+    <div class="forecast-action">更新 8 张以上照片</div>
+    <div class="forecast-gain">+25次/周</div>
+  </div>
+  <div class="forecast-item">
+    <div class="forecast-checkbox"></div>
+    <div class="forecast-action">将挂牌价调至 640万 以内</div>
+    <div class="forecast-gain">+50次/周</div>
+  </div>
+  <div class="forecast-item">
+    <div class="forecast-checkbox"></div>
+    <div class="forecast-action">补充户型图和小区环境照</div>
+    <div class="forecast-gain">+15次/周</div>
+  </div>
+
+  <div class="forecast-total">
+    <div class="forecast-total-text">全部完成后预计每周曝光</div>
+    <div class="forecast-total-num">+102 次</div>
+  </div>
+</div>
+
+<!-- Competitor Ranking -->
+<div class="competitor-section">
+  <div class="comp-title">🏆 同小区在售竞品排名</div>
+  <div class="comp-list">
+    <div class="comp-item">
+      <div class="comp-rank rank-1">1</div>
+      <div class="comp-info">
+        <div class="comp-room">2居室 85m² · 南北 · 评分 88</div>
+        <div class="comp-days">挂牌 15天 · 已看 32次</div>
+      </div>
+      <div class="comp-price">650万</div>
+    </div>
+    <div class="comp-item">
+      <div class="comp-rank rank-2">2</div>
+      <div class="comp-info">
+        <div class="comp-room">2居室 80m² · 南北 · 评分 75</div>
+        <div class="comp-days">挂牌 22天 · 已看 18次</div>
+      </div>
+      <div class="comp-price">630万</div>
+    </div>
+    <div class="comp-item mine">
+      <div class="comp-rank rank-me">我</div>
+      <div class="comp-info">
+        <div class="comp-room">2居室 82m² · 南北 · 评分 70 <span class="mine-tag">我的</span></div>
+        <div class="comp-days">挂牌 28天 · 已看 12次</div>
+      </div>
+      <div class="comp-price mine-price">680万</div>
+    </div>
+    <div class="comp-item">
+      <div class="comp-rank rank-3">4</div>
+      <div class="comp-info">
+        <div class="comp-room">2居室 79m² · 南北 · 评分 62</div>
+        <div class="comp-days">挂牌 45天 · 已看 8次</div>
+      </div>
+      <div class="comp-price">698万</div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-section">
+  <div class="section-title">本周数据 <span class="week-tag">03.21 ~ 03.27</span></div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">曝光量 · 排名 1</div>
+      <div class="stat-num-row">
+        <div class="stat-num">120</div>
+        <div class="stat-trend trend-up">↑</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">浏览量 · 排名 1</div>
+      <div class="stat-num-row">
+        <div class="stat-num">80</div>
+        <div class="stat-trend trend-down">↓</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">咨询量 · 排名 12</div>
+      <div class="stat-num-row">
+        <div class="stat-num">22</div>
+        <div class="stat-trend trend-up">↑</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">带看量 · 排名 3</div>
+      <div class="stat-num-row">
+        <div class="stat-num">12</div>
+        <div class="stat-trend trend-down">↓</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-cta">
+  <button class="send-btn">发给业主</button>
+</div>
+
+</body>
+</html>
