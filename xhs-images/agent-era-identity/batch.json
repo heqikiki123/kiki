@@ -1,0 +1,54 @@
+{
+  "jobs": 4,
+  "tasks": [
+    {
+      "id": "01-cover",
+      "promptFiles": ["prompts/01-cover-identity-cover.md"],
+      "image": "01-cover-identity-cover.png",
+      "ar": "3:4",
+      "quality": "2k"
+    },
+    {
+      "id": "02-chapter-quote",
+      "promptFiles": ["prompts/02-content-chapter-quote.md"],
+      "image": "02-content-chapter-quote.png",
+      "ar": "3:4",
+      "quality": "2k"
+    },
+    {
+      "id": "03-role-shift",
+      "promptFiles": ["prompts/03-content-role-shift.md"],
+      "image": "03-content-role-shift.png",
+      "ar": "3:4",
+      "quality": "2k"
+    },
+    {
+      "id": "04-shock-data",
+      "promptFiles": ["prompts/04-content-shock-data.md"],
+      "image": "04-content-shock-data.png",
+      "ar": "3:4",
+      "quality": "2k"
+    },
+    {
+      "id": "05-three-keywords",
+      "promptFiles": ["prompts/05-content-three-keywords.md"],
+      "image": "05-content-three-keywords.png",
+      "ar": "3:4",
+      "quality": "2k"
+    },
+    {
+      "id": "06-manifesto",
+      "promptFiles": ["prompts/06-content-identity-manifesto.md"],
+      "image": "06-content-identity-manifesto.png",
+      "ar": "3:4",
+      "quality": "2k"
+    },
+    {
+      "id": "07-ending",
+      "promptFiles": ["prompts/07-ending-abcd-ending.md"],
+      "image": "07-ending-abcd-ending.png",
+      "ar": "3:4",
+      "quality": "2k"
+    }
+  ]
+}
