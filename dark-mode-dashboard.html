@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>本月经营看板 - 深色模式</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base: #0f1117;
+      --bg-card: #1a1d2e;
+      --bg-card-alt: #1e2235;
+      --bg-hover: #252840;
+      --border: #2a2f4a;
+      --border-light: #333756;
+      --text-primary: #e8eaf0;
+      --text-secondary: #9aa0bc;
+      --text-muted: #6b7194;
+      --blue: #4a90e8;
+      --blue-light: #6aa8f0;
+      --blue-dim: #1e3a5f;
+      --orange: #f5a623;
+      --orange-dim: #4a320a;
+      --red: #e85454;
+      --red-dim: #4a1a1a;
+      --green: #52c41a;
+      --green-dim: #1a3a0a;
+      --teal: #13c2c2;
+      --yellow: #fadb14;
+      --purple: #722ed1;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 24px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ─── Header ─── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .page-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .page-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .page-period {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .page-header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .store-select {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .store-select .arrow { color: var(--text-muted); font-size: 10px; }
+    .btn-primary {
+      padding: 7px 18px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .btn-primary:hover { background: var(--blue-light); }
+
+    /* ─── Section wrapper ─── */
+    .section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .section-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .info-dot {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--border-light);
+      color: var(--text-muted);
+      font-size: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: help;
+    }
+
+    /* ─── Core Metrics Alert Banner ─── */
+    .alert-banner {
+      background: linear-gradient(135deg, #1a2040 0%, #1e2545 100%);
+      border: 1px solid var(--border-light);
+      border-left: 3px solid var(--orange);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .alert-text p { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+    .alert-text .alert-label { font-weight: 600; color: var(--text-primary); margin-bottom: 6px; font-size: 13px; }
+    .alert-text .highlight-red { color: var(--red); font-weight: 500; }
+    .alert-text .highlight-blue { color: var(--blue); font-weight: 500; }
+    .alert-text .suggest { color: var(--text-secondary); margin-top: 6px; font-size: 13px; }
+    .suggest-link { color: var(--orange); text-decoration: underline; cursor: pointer; }
+    .suggest-link2 { color: var(--blue); text-decoration: underline; cursor: pointer; }
+    .alert-graphic {
+      flex-shrink: 0;
+      width: 120px;
+      height: 80px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--blue-dim) 0%, #0d2040 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .graphic-bars { display: flex; align-items: flex-end; gap: 4px; }
+    .graphic-bar { width: 12px; border-radius: 3px 3px 0 0; }
+
+    /* ─── Metric Cards Grid ─── */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+    .metric-card {
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .metric-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+    .metric-toggle {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-bottom: 6px;
+    }
+    .toggle-pill {
+      width: 30px; height: 16px;
+      background: var(--blue-dim);
+      border-radius: 8px;
+      position: relative;
+      cursor: pointer;
+    }
+    .toggle-pill::after {
+      content: '';
+      position: absolute;
+      left: 2px; top: 2px;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--blue);
+    }
+    .metric-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .metric-target { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+
+    .progress-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .progress-label { font-size: 12px; color: var(--text-secondary); flex: 1; }
+    .progress-value { font-size: 12px; color: var(--text-muted); min-width: 80px; text-align: right; }
+    .progress-bar-wrap {
+      height: 6px;
+      background: var(--bg-hover);
+      border-radius: 3px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+    .fill-blue { background: var(--blue); }
+    .fill-orange { background: var(--orange); }
+    .fill-green { background: var(--green); }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+    /* ─── Room Issues Section ─── */
+    .room-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .room-title-group { display: flex; align-items: center; gap: 10px; }
+    .room-count { font-size: 13px; color: var(--text-muted); }
+    .room-filters { display: flex; align-items: center; gap: 8px; }
+    .filter-select {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 12px;
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .filter-select .arrow { color: var(--text-muted); font-size: 10px; }
+
+    .tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .tab {
+      padding: 8px 16px;
+      font-size: 14px;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .tab.active { color: var(--red); border-bottom-color: var(--red); font-weight: 500; }
+
+    .room-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .room-card {
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .room-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+    .room-card-title { font-size: 13px; color: var(--text-primary); font-weight: 500; flex: 1; line-height: 1.4; }
+    .btn-detail {
+      flex-shrink: 0;
+      padding: 4px 10px;
+      background: var(--blue-dim);
+      color: var(--blue-light);
+      border: 1px solid var(--blue);
+      border-radius: 5px;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-detail:hover { background: var(--blue); color: #fff; }
+    .room-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .tag-red { background: var(--red-dim); color: var(--red); border: 1px solid #6b2424; }
+    .tag-orange { background: var(--orange-dim); color: var(--orange); border: 1px solid #6b4a1a; }
+    .tag-green { background: var(--green-dim); color: var(--green); border: 1px solid #1a4a0a; }
+
+    /* ─── Process Monitoring ─── */
+    .monitor-header { margin-bottom: 18px; }
+    .monitor-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .monitor-period { font-size: 12px; color: var(--text-muted); }
+    .monitor-rate-highlight { color: var(--orange); font-weight: 600; }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 3fr;
+      gap: 20px;
+    }
+    .chart-panel {
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .chart-panel-title { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
+    .chart-panel-period { font-size: 11px; color: var(--text-muted); margin-bottom: 14px; }
+
+    /* Simple SVG line chart */
+    .line-chart-wrap { position: relative; }
+    .chart-y-axis { display: flex; flex-direction: column; justify-content: space-between; height: 100px; margin-bottom: 4px; }
+    .chart-y-label { font-size: 10px; color: var(--text-muted); }
+
+    .chart-legend {
+      display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-secondary); }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    .bar-chart-group { display: flex; gap: 12px; }
+    .bar-chart-sub { flex: 1; }
+    .bar-chart-sub-title { font-size: 11px; color: var(--text-muted); text-align: center; margin-bottom: 8px; }
+    .bar-chart-area {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      height: 80px;
+      gap: 4px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2px;
+    }
+    .bar-group { display: flex; align-items: flex-end; gap: 2px; }
+    .bar {
+      width: 8px;
+      border-radius: 2px 2px 0 0;
+    }
+    .bar-blue { background: var(--blue); }
+    .bar-teal { background: var(--teal); }
+    .bar-green { background: var(--green); }
+    .bar-yellow { background: var(--yellow); }
+    .bar-labels {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 4px;
+    }
+    .bar-label { font-size: 10px; color: var(--text-muted); }
+
+    /* SVG chart */
+    svg { display: block; }
+    .chart-tooltip {
+      position: absolute;
+      background: var(--bg-hover);
+      border: 1px solid var(--border-light);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: var(--text-primary);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════ PAGE HEADER ══ -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <span class="page-title">本月经营看板</span>
+      <span class="page-period">（时间周期：12月1日－12月3日）</span>
+    </div>
+    <div class="page-header-right">
+      <div class="store-select">大宁店 <span class="arrow">▾</span></div>
+      <button class="btn-primary">编辑目标</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ CORE METRICS ══ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">核心经营数据分析</span>
+      <span class="info-dot">?</span>
+      <span class="section-sub">截止到今日当前经营核心问题总结</span>
+    </div>
+
+    <!-- Alert Banner -->
+    <div class="alert-banner">
+      <div class="alert-text">
+        <p class="alert-label">当前经营核心问题总结：</p>
+        <p>
+          截止到今日
+          <span class="highlight-red">【总收入】</span>进度不及预期，请尽快进行调整，
+          <span class="highlight-red">【间夜出租率】【平均租金】</span>目标均无法达成。
+        </p>
+        <p class="suggest">
+          系统总体建议：<span class="suggest-link">适度降价并加大投放力度，</span>
+          <span class="suggest-link2">提升间夜出租率。</span>
+        </p>
+      </div>
+      <!-- Decorative graphic -->
+      <div class="alert-graphic">
+        <div class="graphic-bars">
+          <div class="graphic-bar bar-blue" style="height:40px; background:var(--blue); opacity:.7"></div>
+          <div class="graphic-bar" style="height:55px; background:var(--teal); opacity:.7; width:12px; border-radius:3px 3px 0 0"></div>
+          <div class="graphic-bar" style="height:30px; background:var(--orange); opacity:.7; width:12px; border-radius:3px 3px 0 0"></div>
+          <div class="graphic-bar bar-blue" style="height:48px; background:var(--blue); opacity:.5"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metric Cards -->
+    <div class="metrics-grid">
+
+      <!-- Total Revenue -->
+      <div class="metric-card">
+        <div class="metric-label">总收入</div>
+        <div class="metric-toggle">
+          <span style="font-size:12px;color:var(--text-muted)">优惠前</span>
+          <div class="toggle-pill"></div>
+        </div>
+        <div class="metric-value">¥877,016.2</div>
+        <div class="metric-target">目标收入 1,651,887</div>
+        <hr class="divider">
+        <div class="progress-row">
+          <span class="progress-label">租金类</span>
+          <span class="progress-value">864,218.6 / 1,611,597</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill fill-blue" style="width:54%"></div>
+        </div>
+        <div class="progress-row">
+          <span class="progress-label">违约类</span>
+          <span class="progress-value" style="color:var(--orange)">12,297.6 / 40,290</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill fill-orange" style="width:31%"></div>
+        </div>
+      </div>
+
+      <!-- Occupancy Rate -->
+      <div class="metric-card">
+        <div class="metric-label">间夜出租率</div>
+        <div style="height:26px"></div>
+        <div class="metric-value">93.10%</div>
+        <div class="metric-target">目标出租率 93.00%</div>
+        <hr class="divider">
+        <div class="progress-row">
+          <span class="progress-label">新签</span>
+          <span class="progress-value">35 / 33</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill fill-blue" style="width:100%"></div>
+        </div>
+        <div class="progress-row">
+          <span class="progress-label">续约</span>
+          <span class="progress-value" style="color:var(--orange)">1 / 14</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill fill-orange" style="width:7%"></div>
+        </div>
+      </div>
+
+      <!-- Average Rent -->
+      <div class="metric-card">
+        <div class="metric-label">平均租金</div>
+        <div style="height:26px"></div>
+        <div class="metric-value">¥3,400</div>
+        <div class="metric-target">目标租金 4300.00</div>
+        <hr class="divider">
+        <div class="progress-row">
+          <span class="progress-label">新签</span>
+          <span class="progress-value" style="color:var(--orange)">3918 / 4300</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill fill-orange" style="width:91%"></div>
+        </div>
+        <div class="progress-row">
+          <span class="progress-label">续约</span>
+          <span class="progress-value">4399.10 / 4300</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill fill-blue" style="width:100%"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ ROOM ISSUES ══ -->
+  <div class="section">
+    <div class="room-header">
+      <div class="room-title-group">
+        <span class="section-title">问题房型分析</span>
+        <span class="room-count">房型总数：20</span>
+      </div>
+      <div class="room-filters">
+        <div class="filter-select">严重问题 <span class="arrow">▾</span></div>
+        <div class="filter-select">A1 <span class="arrow">▾</span></div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active">问题房型 12</div>
+      <div class="tab">已处理观察中房型 8</div>
+    </div>
+
+    <div class="room-grid">
+
+      <!-- Row 1 -->
+      <div class="room-card">
+        <div class="room-card-header">
+          <span class="room-card-title">A1. 近上海马戏城/静安保租房/东向电梯房/拎包入住</span>
+          <button class="btn-detail">查看详情</button>
+        </div>
+        <div class="room-tags">
+          <span class="tag tag-red">投放存在问题</span>
+          <span class="tag tag-orange">价格需要调整</span>
+          <span class="tag tag-green">转化问题已处理</span>
+        </div>
+      </div>
+
+      <div class="room-card">
+        <div class="room-card-header">
+          <span class="room-card-title">A1. 近上海马戏城/静安保租房/东向电梯房/拎包入住</span>
+          <button class="btn-detail">查看详情</button>
+        </div>
+        <div class="room-tags">
+          <span class="tag tag-red">投放存在问题</span>
+          <span class="tag tag-orange">价格需要调整</span>
+          <span class="tag tag-green">转化问题已处理</span>
+        </div>
+      </div>
+
+      <div class="room-card">
+        <div class="room-card-header">
+          <span class="room-card-title">A1. 近上海马戏城/静安保租房/东向电梯房/拎包入住</span>
+          <button class="btn-detail">查看详情</button>
+        </div>
+        <div class="room-tags">
+          <span class="tag tag-red">投放存在问题</span>
+          <span class="tag tag-orange">价格需要调整</span>
+          <span class="tag tag-green">转化问题已处理</span>
+        </div>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="room-card">
+        <div class="room-card-header">
+          <span class="room-card-title">A2. 【长租特价】近地铁/南向采光/电梯直达/独立厨卫</span>
+          <button class="btn-detail">查看详情</button>
+        </div>
+        <div class="room-tags">
+          <span class="tag tag-red">投放存在问题</span>
+          <span class="tag tag-red">转化存在问题</span>
+        </div>
+      </div>
+
+      <div class="room-card">
+        <div class="room-card-header">
+          <span class="room-card-title">A2. 【长租特价】近地铁/南向采光/电梯直达/独立厨卫</span>
+          <button class="btn-detail">查看详情</button>
+        </div>
+        <div class="room-tags">
+          <span class="tag tag-red">投放存在问题</span>
+          <span class="tag tag-red">转化存在问题</span>
+        </div>
+      </div>
+
+      <div class="room-card">
+        <div class="room-card-header">
+          <span class="room-card-title">A2. 【长租特价】近地铁/南向采光/电梯直达/独立厨卫</span>
+          <button class="btn-detail">查看详情</button>
+        </div>
+        <div class="room-tags">
+          <span class="tag tag-red">投放存在问题</span>
+          <span class="tag tag-red">转化存在问题</span>
+        </div>
+      </div>
+
+      <!-- Row 3 -->
+      <div class="room-card">
+        <div class="room-card-header">
+          <span class="room-card-title">A3. 静安保租房/近商圈/西向/精装可月付无中介</span>
+          <button class="btn-detail">查看详情</button>
+        </div>
+        <div class="room-tags">
+          <span class="tag tag-orange">投放存在问题</span>
+        </div>
+      </div>
+
+      <div class="room-card">
+        <div class="room-card-header">
+          <span class="room-card-title">A3. 静安保租房/近商圈/西向/精装可月付无中介</span>
+          <button class="btn-detail">查看详情</button>
+        </div>
+        <div class="room-tags">
+          <span class="tag tag-orange">投放存在问题</span>
+        </div>
+      </div>
+
+      <div class="room-card">
+        <div class="room-card-header">
+          <span class="room-card-title">A3. 静安保租房/近商圈/西向/精装可月付无中介</span>
+          <button class="btn-detail">查看详情</button>
+        </div>
+        <div class="room-tags">
+          <span class="tag tag-orange">投放存在问题</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ PROCESS MONITORING ══ -->
+  <div class="section">
+    <div class="monitor-header">
+      <div class="monitor-title-row">
+        <span class="section-title">过程数据监控</span>
+        <span class="monitor-period">
+          （11月25日－12月2日，系统建议数 35个，已采纳 28个，采纳率
+          <span class="monitor-rate-highlight">80%</span>）
+        </span>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+
+      <!-- Left: Line Chart -->
+      <div class="chart-panel">
+        <div class="chart-panel-title">近一周数据建议采纳率</div>
+        <div class="chart-panel-period">单位：%</div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> 建议采纳率</div>
+        </div>
+        <svg viewBox="0 0 240 100" width="100%" height="110">
+          <!-- Grid lines -->
+          <line x1="0" y1="0"   x2="240" y2="0"   stroke="#2a2f4a" stroke-width="1"/>
+          <line x1="0" y1="25"  x2="240" y2="25"  stroke="#2a2f4a" stroke-width="1"/>
+          <line x1="0" y1="50"  x2="240" y2="50"  stroke="#2a2f4a" stroke-width="1"/>
+          <line x1="0" y1="75"  x2="240" y2="75"  stroke="#2a2f4a" stroke-width="1"/>
+          <line x1="0" y1="100" x2="240" y2="100" stroke="#2a2f4a" stroke-width="1"/>
+          <!-- Y labels -->
+          <text x="0" y="-3"   font-size="9" fill="#6b7194">100</text>
+          <text x="0" y="22"   font-size="9" fill="#6b7194">80</text>
+          <text x="0" y="47"   font-size="9" fill="#6b7194">60</text>
+          <text x="0" y="72"   font-size="9" fill="#6b7194">40</text>
+          <text x="0" y="97"   font-size="9" fill="#6b7194">20</text>
+          <!-- Area fill -->
+          <defs>
+            <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#4a90e8" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#4a90e8" stop-opacity="0.02"/>
+            </linearGradient>
+          </defs>
+          <polygon
+            points="20,55 55,52 90,58 125,48 160,31 195,30 230,25"
+            fill="none" stroke="none"/>
+          <path
+            d="M20,55 C35,53 47,53 55,52 C67,51 78,57 90,58 C107,59 115,48 125,48 C140,48 150,35 160,31 C175,27 185,29 195,30 C210,31 222,26 230,25 L230,100 L20,100 Z"
+            fill="url(#lineGrad)"/>
+          <path
+            d="M20,55 C35,53 47,53 55,52 C67,51 78,57 90,58 C107,59 115,48 125,48 C140,48 150,35 160,31 C175,27 185,29 195,30 C210,31 222,26 230,25"
+            fill="none" stroke="#4a90e8" stroke-width="2" stroke-linejoin="round"/>
+          <!-- Highlight point at 11/12 -->
+          <circle cx="160" cy="31" r="5" fill="#4a90e8" stroke="#0f1117" stroke-width="2"/>
+          <rect x="148" y="18" width="28" height="15" rx="3" fill="#252840" stroke="#4a90e8" stroke-width="1"/>
+          <text x="162" y="29" font-size="9" fill="#4a90e8" text-anchor="middle" font-weight="bold">69</text>
+          <!-- X labels -->
+          <text x="20"  y="113" font-size="8.5" fill="#6b7194" text-anchor="middle">11/08</text>
+          <text x="55"  y="113" font-size="8.5" fill="#6b7194" text-anchor="middle">11/09</text>
+          <text x="90"  y="113" font-size="8.5" fill="#6b7194" text-anchor="middle">11/10</text>
+          <text x="125" y="113" font-size="8.5" fill="#6b7194" text-anchor="middle">11/11</text>
+          <text x="160" y="113" font-size="8.5" fill="#6b7194" text-anchor="middle">11/12</text>
+          <text x="195" y="113" font-size="8.5" fill="#6b7194" text-anchor="middle">11/13</text>
+          <text x="230" y="113" font-size="8.5" fill="#6b7194" text-anchor="middle">11/14</text>
+        </svg>
+      </div>
+
+      <!-- Right: Bar Charts -->
+      <div class="chart-panel">
+        <div class="chart-panel-title">近一周指数变化趋势</div>
+        <div class="chart-panel-period">单位：件</div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> 曝光量</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div> 点击量</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> 商机量</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> 成交量</div>
+        </div>
+        <div class="bar-chart-group">
+
+          <!-- 11/03-11/09 -->
+          <div class="bar-chart-sub">
+            <div class="bar-chart-area">
+              <div class="bar-group">
+                <div class="bar bar-blue" style="height:70px"></div>
+                <div class="bar bar-teal" style="height:45px"></div>
+                <div class="bar bar-green" style="height:28px"></div>
+                <div class="bar bar-yellow" style="height:15px"></div>
+              </div>
+            </div>
+            <div style="text-align:center;font-size:10px;color:var(--text-muted);margin-top:6px">11/03-11/09</div>
+          </div>
+
+          <!-- 11/10-11/16 -->
+          <div class="bar-chart-sub">
+            <div class="bar-chart-area">
+              <div class="bar-group">
+                <div class="bar bar-blue" style="height:55px"></div>
+                <div class="bar bar-teal" style="height:35px"></div>
+                <div class="bar bar-green" style="height:22px"></div>
+                <div class="bar bar-yellow" style="height:12px"></div>
+              </div>
+            </div>
+            <div style="text-align:center;font-size:10px;color:var(--text-muted);margin-top:6px">11/10-11/16</div>
+          </div>
+
+          <!-- 11/17-11/23 -->
+          <div class="bar-chart-sub">
+            <div class="bar-chart-area">
+              <div class="bar-group">
+                <div class="bar bar-blue" style="height:42px"></div>
+                <div class="bar bar-teal" style="height:30px"></div>
+                <div class="bar bar-green" style="height:18px"></div>
+                <div class="bar bar-yellow" style="height:8px"></div>
+              </div>
+            </div>
+            <div style="text-align:center;font-size:10px;color:var(--text-muted);margin-top:6px">11/17-11/23</div>
+          </div>
+
+          <!-- 11/24-11/31 -->
+          <div class="bar-chart-sub">
+            <div class="bar-chart-area">
+              <div class="bar-group">
+                <div class="bar bar-blue" style="height:60px"></div>
+                <div class="bar bar-teal" style="height:40px"></div>
+                <div class="bar bar-green" style="height:25px"></div>
+                <div class="bar bar-yellow" style="height:14px"></div>
+              </div>
+            </div>
+            <div style="text-align:center;font-size:10px;color:var(--text-muted);margin-top:6px">11/24-11/31</div>
+          </div>
+
+          <!-- 12/01-12/07 -->
+          <div class="bar-chart-sub">
+            <div class="bar-chart-area">
+              <div class="bar-group">
+                <div class="bar bar-blue" style="height:48px"></div>
+                <div class="bar bar-teal" style="height:32px"></div>
+                <div class="bar bar-green" style="height:20px"></div>
+                <div class="bar bar-yellow" style="height:10px"></div>
+              </div>
+            </div>
+            <div style="text-align:center;font-size:10px;color:var(--text-muted);margin-top:6px">12/01-12/07</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>
